@@ -190,13 +190,13 @@
 			
 			totalFrame = (animationRange.end.frame as integer)
 
-			addFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp0.mp4" + " -vf \"drawtext=text=CurFrame %{n}: start_number=0: x=100: y=100: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp1.mp4"
+			addFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp0.mp4" + " -vf \"drawtext=\"fontfile=C\\\\:/Windows/Fonts/simhei.ttf:\"text=当前帧 %{n}: start_number=0: x=100: y=100: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp1.mp4"
 			HiddenDOSCommand addFrameCommand donotwait:false
 
-			addTotalFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp1.mp4" + " -vf \"drawtext=text=TotalFrame " + (totalFrame as string) + ": x=100: y=150: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp2.mp4"
+			addTotalFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp1.mp4" + " -vf \"drawtext=\"fontfile=C\\\\:/Windows/Fonts/simhei.ttf:\"text=总帧数 " + (totalFrame as string) + ": x=100: y=150: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp2.mp4"
 			HiddenDOSCommand addTotalFrameCommand donotwait:false
 
-			addFileNameCommand =  Xr_FFmpegFile + " -i " + videoout + "_tmp2.mp4" + " -vf \"drawtext=text=" + (Xr_Preview_PreviewName) + ": x=100: y=200: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + ".mp4"
+			addFileNameCommand =  Xr_FFmpegFile + " -i " + videoout + "_tmp2.mp4" + " -vf \"drawtext=\"fontfile=C\\\\:/Windows/Fonts/simhei.ttf:\"text=" + (Xr_Preview_PreviewName) + ": x=100: y=200: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + ".mp4"
 			HiddenDOSCommand addFileNameCommand donotwait:false
 
 			deletefile ((videoout + "_tmp0.mp4"))
@@ -224,10 +224,16 @@
 
 			print (addFileNameCommand)
 
-			FFmpeg_SetFormat = " -filter_complex \"[0]split[a][b]; [a]palettegen[palette]; [b][palette]paletteuse\" " + "\"" + (videoout + ".gif")
+			FFmpeg_SetFormat = " -filter_complex \"[0]split[a][b]; [a]palettegen[palette]; [b][palette]paletteuse\" "+ " -r 60 " + "\""+(videoout + ".gif")
 
 			convertout = Xr_FFmpegFile + " -i \"" + videoout +"_tmp3.mp4" + "\"" + FFmpeg_SetFormat + "\"" + " -y -loglevel quiet"
+
+			print convertout
 			HiddenDOSCommand convertout donotwait:false
+
+			--fastCommand = Xr_FFmpegFile + " -i " + videoout + ".gif" + " -r 120  " + videoout + "11.gif"
+			--print fastCommand
+			--HiddenDOSCommand fastCommand donotwait:false
 
 			deletefile ((videoout + "_tmp0.mp4"))
 			deletefile ((videoout + "_tmp1.mp4"))
