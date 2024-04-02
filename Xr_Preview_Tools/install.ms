@@ -54,7 +54,7 @@
 			Xr_Preview_install_Label_1.foreColor = Xr_Preview_install_Label_1.backcolor.fromARGB 0 0 0
 			Xr_Preview_install_Label_1.TextAlign = (dotNetClass "System.Drawing.ContentAlignment").MiddleCenter
 
-			Xr_Preview_install_Label_2.text = "--- TG Xr ---"
+			Xr_Preview_install_Label_2.text = "--- 望月定制 ---"
 			Xr_Preview_install_Label_2.backcolor = Xr_Preview_install_Label_2.backcolor.fromARGB 176 176 176
 			Xr_Preview_install_Label_2.foreColor = Xr_Preview_install_Label_2.backcolor.fromARGB 90 90 90
 			Xr_Preview_install_Label_2.font = dotnetobject "System.Drawing.Font" "微软雅黑" 9

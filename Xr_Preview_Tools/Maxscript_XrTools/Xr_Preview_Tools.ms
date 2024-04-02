@@ -19,7 +19,7 @@
 	global Xr_Preview_PreviewPath
 	global Xr_Preview_GetPreviewPath
 	global Xr_Preview_GetPreviewName
-	global Xr_Preview_SetFormat = "Avi"
+	global Xr_Preview_SetFormat = "Mp4"
 	global Xr_Preview_BatchValue = 0
 	global Xr_Preview_SaveViewInt = 0
 	global Xr_Preview_AppStartingValue = 0
@@ -177,19 +177,63 @@
 		--                 ↓显示帧数↓      ↓隐藏活动栅格↓   ↓隐藏摄像机↓ 	  ↓显示模型↓	↓隐藏图形↓		 ↓隐藏灯光↓		↓隐藏辅助对象↓		↓隐藏粒子↓		↓隐藏骨骼↓		↓不显示安全框↓	 ↓不显示背景↓ ↓输出百分比为100↓ ↓起始和结束帧直接获取下当前的↓
 		createPreview dspFrameNums:true dspGrid:false dspCameras:false dspGeometr:true dspShapes:false dspLights:false dspHelpers:false dspParticles:false dspBones:false dspSafeFrame:false dspBkg:false percentSize:100 start:Xr_PreviewStart end:Xr_PreviewEnd
 
-		if Xr_Preview_SetFormat == "Avi" then
+		fontFile = "C\:/Windows/Fonts/simhei.ttf"
+
+		print (fontFile)
+		print (doesFileExist fontFile)
+
+		if Xr_Preview_SetFormat == "Mp4" then
 		(
-			FFmpeg_SetFormat = " -vcodec h264 -pix_fmt yuv420p " + "\"" + (videoout + ".avi")
-		)else if Xr_Preview_SetFormat == "Mp4" then
-		(
-			FFmpeg_SetFormat = " -c:v libx264 -pix_fmt yuv420p " + "\"" + (videoout + ".mp4")
+			FFmpeg_SetFormat = " -c:v libx264 -pix_fmt yuv420p " + "\"" + (videoout + "_tmp0.mp4")
+			convertout = Xr_FFmpegFile + " -i \"" + videoin + "\"" + FFmpeg_SetFormat + "\"" + " -y -loglevel quiet"
+			HiddenDOSCommand convertout donotwait:false
+			
+			totalFrame = (animationRange.end.frame as integer)
+
+			addFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp0.mp4" + " -vf \"drawtext=text=CurFrame %{n}: start_number=0: x=100: y=100: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp1.mp4"
+			HiddenDOSCommand addFrameCommand donotwait:false
+
+			addTotalFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp1.mp4" + " -vf \"drawtext=text=TotalFrame " + (totalFrame as string) + ": x=100: y=150: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp2.mp4"
+			HiddenDOSCommand addTotalFrameCommand donotwait:false
+
+			addFileNameCommand =  Xr_FFmpegFile + " -i " + videoout + "_tmp2.mp4" + " -vf \"drawtext=text=" + (Xr_Preview_PreviewName) + ": x=100: y=200: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + ".mp4"
+			HiddenDOSCommand addFileNameCommand donotwait:false
+
+			deletefile ((videoout + "_tmp0.mp4"))
+			deletefile ((videoout + "_tmp1.mp4"))
+			deletefile ((videoout + "_tmp2.mp4"))
+
 		)else if Xr_Preview_SetFormat == "Gif" then
 		(
-			FFmpeg_SetFormat = " -filter_complex \"[0]split[a][b]; [a]palettegen[palette]; [b][palette]paletteuse\" " + "\"" + (videoout + ".gif")
-		)else(FFmpeg_SetFormat = "\"" + (videoout + ".mp4"))
+			FFmpeg_SetFormat = " -c:v libx264 -pix_fmt yuv420p " + "\"" + (videoout + "_tmp0.mp4")
+			convertout = Xr_FFmpegFile + " -i \"" + videoin + "\"" + FFmpeg_SetFormat + "\"" + " -y -loglevel quiet"
+			HiddenDOSCommand convertout donotwait:false
+			
+			totalFrame = (animationRange.end.frame as integer)
 
-		convertout = Xr_FFmpegFile + " -i \"" + videoin + "\"" + FFmpeg_SetFormat + "\"" + " -y -loglevel quiet"
-		HiddenDOSCommand convertout donotwait:true exitCode:&exitcode
+			addFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp0.mp4" + " -vf \"drawtext=\"fontfile=C\\\\:/Windows/Fonts/simhei.ttf:\" text_shaping=1: text=当前帧 %{n}: start_number=0: x=100: y=100: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp1.mp4"
+			HiddenDOSCommand addFrameCommand donotwait:false
+
+			addTotalFrameCommand = Xr_FFmpegFile + " -i " + videoout + "_tmp1.mp4" + " -vf \"drawtext=fontfile=C\\\\:/Windows/Fonts/simhei.ttf: text_shaping=1: text=总帧数 " + (totalFrame as string) + ": x=100: y=150: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp2.mp4"
+			HiddenDOSCommand addTotalFrameCommand donotwait:false
+
+			
+
+			addFileNameCommand =  Xr_FFmpegFile + " -i " + videoout + "_tmp2.mp4" + " -vf \"drawtext=fontfile=C\\\\:/Windows/Fonts/simhei.ttf: text_shaping=1: text=" + (Xr_Preview_PreviewName) + ": x=100: y=200: fontcolor=black: fontsize=25: box=1: boxcolor=white: boxborderw=5\" " + videoout + "_tmp3.mp4"
+			HiddenDOSCommand addFileNameCommand donotwait:false
+
+			print (addFileNameCommand)
+
+			FFmpeg_SetFormat = " -filter_complex \"[0]split[a][b]; [a]palettegen[palette]; [b][palette]paletteuse\" " + "\"" + (videoout + ".gif")
+
+			convertout = Xr_FFmpegFile + " -i \"" + videoout +"_tmp3.mp4" + "\"" + FFmpeg_SetFormat + "\"" + " -y -loglevel quiet"
+			HiddenDOSCommand convertout donotwait:false
+
+			deletefile ((videoout + "_tmp0.mp4"))
+			deletefile ((videoout + "_tmp1.mp4"))
+			deletefile ((videoout + "_tmp2.mp4"))
+			deletefile ((videoout + "_tmp3.mp4"))
+		)
 	)
 
 	struct vpSave (
@@ -244,7 +288,7 @@
 		on Xr_Preview_About open do
 		(
 			bold = (dotnetclass "System.Drawing.FontStyle").Bold
-			Xr_About_biaoti.text = "--   Xr Preview Tools   --"
+			Xr_About_biaoti.text = "--   录屏工具   --"
 			Xr_About_biaoti.font= dotnetobject "System.Drawing.Font" "微软雅黑" 16 bold
 			Xr_About_biaoti.backcolor = Xr_About_biaoti.backcolor.fromARGB 136 214 210
 			Xr_About_biaoti.TextAlign = (dotNetClass "System.Drawing.ContentAlignment").MiddleCenter
@@ -255,7 +299,7 @@
 		)
 	)
 ---------------------输入预设名称窗口
-	rollout Xr_Preview_Preset_Win "Xr Preview Preset" width:350 height:220
+	rollout Xr_Preview_Preset_Win "录屏工具" width:350 height:220
 	(
 		dotNetControl Xr_PreviewPreset_Title_1 "System.Windows.Forms.Label" pos:[15,7] width:320 height:18
 		GroupBox Xr_PreviewPreset_GrpBox_1 "" width:330 height:73 pos:[10,25]
@@ -346,7 +390,7 @@
 		on Xr_PreviewPreset_Cancel pressed do (destroyDialog Xr_Preview_Preset_Win)
 	)
 ---------------------主界面
-	rollout Xr_Preview_Tools "Xr Preview Tools" width:400 height:285
+	rollout Xr_Preview_Tools "录屏工具" width:400 height:285
 	(
 		dotNetControl Xr_Preview_Label_1 "System.Windows.Forms.Label" pos:[0,0] width:400 height:33
 		dotNetControl Xr_Preview_Label_2 "System.Windows.Forms.Label" pos:[0,33] width:400 height:20
@@ -391,7 +435,7 @@
 			Xr_Preview_Label_1.foreColor = Xr_Preview_Label_1.backcolor.fromARGB 0 0 0
 			Xr_Preview_Label_1.TextAlign = (dotNetClass "System.Drawing.ContentAlignment").MiddleCenter
 
-			Xr_Preview_Label_2.text = "--- TG Xr ---"
+			Xr_Preview_Label_2.text = "--- 望月定制 ---"
 			Xr_Preview_Label_2.backcolor = Xr_Preview_Label_2.backcolor.fromARGB  180 180 180 
 			Xr_Preview_Label_2.foreColor = Xr_Preview_Label_2.backcolor.fromARGB 90 90 90
 			Xr_Preview_Label_2.font= dotnetobject "System.Drawing.Font" "微软雅黑" 9
@@ -417,14 +461,15 @@
 					Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Language" "Xr_Preview_Chinese"
 				)
 
+				Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Format" "Mp4"
 				Xr_Preview_FormatText = Xr_StINISetting.Xr_GetINISetting "Xr_PreviewConf" "Format"
 				if Xr_Preview_FormatText != "" then
 				(
 					Xr_Preview_Format.text = Xr_Preview_FormatText
 					Xr_Preview_SetFormat = Xr_Preview_FormatText
 				)else(
-					Xr_Preview_Format.text = "Avi"
-					Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Format" "Avi"
+					Xr_Preview_Format.text = "Mp4"
+					Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Format" "Mp4"
 				)
 
 				Xr_Preview_RenderWidthValue = Xr_StINISetting.Xr_GetINISetting "Xr_PreviewConf" "RenderWidthValue"
@@ -599,19 +644,14 @@
 
 		on Xr_Preview_Format pressed do
 		(
-			if Xr_Preview_Format.text == "Avi" then
-			(
-				Xr_Preview_Format.text = "Mp4"
-				Xr_Preview_SetFormat = "Mp4"
-				Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Format" "Mp4"
-			)else if Xr_Preview_Format.text == "Mp4" then(
+			if Xr_Preview_Format.text == "Mp4" then(
 				Xr_Preview_Format.text = "Gif"
 				Xr_Preview_SetFormat = "Gif"
 				Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Format" "Gif"
 			)else if Xr_Preview_Format.text == "Gif" then(
-				Xr_Preview_Format.text = "Avi"
-				Xr_Preview_SetFormat = "Avi"
-				Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Format" "Avi"
+				Xr_Preview_Format.text = "Mp4"
+				Xr_Preview_SetFormat = "Mp4"
+				Xr_StINISetting.Xr_SetINISetting "Xr_PreviewConf" "Format" "Mp4"
 			)
 		)
 
